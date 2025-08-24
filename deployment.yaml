@@ -1,0 +1,66 @@
+apiVersion: v1
+kind: Deployment
+metadata:
+  name: deploytest
+  labels: deploytest-app
+spec:
+  relocas: 4
+  strategy:
+    type: RollingUpdate   # Использую явное определение стратегии типа RollingUpdate
+    rollingUpdate:        # во имя избежания неопределенное поведение
+      maxUnavailable: 1   # поднятие и выключение подов по одному за цикл.
+      maxSurge: 1
+  selector:
+    matchLabels:
+      app: deploytest-app
+  template:
+    metadata:
+      labels:
+        app: deploytest-app
+  topologySpreadConstarints: #механизм Kubernetes позволяющий развертывать поды следуя указанным правилам
+  # блок отвечающий за распределение подов по зонам
+    - maxSkew: 1 #максимальная разница в количестве развернутых подах
+      topologyKey: "topolody.kubernetes.io/zone" 
+      whenUnsatisfiable: ScheduleAnyway
+      labelSelector:
+        matchLabels:
+          app: deploytest-app  
+  # блок отвечающий за распределение подов по нодам        
+    - maxSkew: 1 
+      topologyKey: "kubernetes.io/hostname" 
+      whenUnsatisfiable: ScheduleAnyway
+      labelSelector:
+        matchLabels:
+         app: deploytest-app
+  containers:
+    - name: deploytest-app
+      image: deploytest-app-image:stable
+      resources:
+        requests:
+          memory: "128Mi" #требуемое по заданию
+          cpu: "0.3" #треxкратный запас на обработку стартого запроса
+        limits:
+          memory: "128Mi" # задание говорит, о стабильном потреблении памяти
+          сpu: "0.5"      #ограничение для пиковой нагрузки
+      readinessProbe: #механизм позволяющий удостовериться в запуске пода для того, чтобы не послать трафик на неготовый под
+        httpGet:
+          path: /
+          port: 81
+        initialDelaySeconds: 10
+        periodSeconds: 5
+        timeoutSeconds: 3
+        failureThreshold: 3
+      livenessProbe: #механизм позволяющий удостовериться в 
+        httpGet: 
+          path: /
+          port: 81
+        initialDelaySeconds: 10
+        periodSeconds: 30
+        timeoutSeconds: 3
+        failureThreshold: 3
+
+    
+
+
+
+
