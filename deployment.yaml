@@ -17,7 +17,7 @@ spec:
     metadata:
       labels:
         app: deploytest-app
-  topologySpreadConstarints: #механизм Kubernetes позволяющий развертывать поды следуя указанным правилам
+  topologySpreadConstarints: #механизм Kubernetes позволяющий развертывать и распределять поды следуя указанным правилам
   # блок отвечающий за распределение подов по зонам
     - maxSkew: 1 #максимальная разница в количестве развернутых подах
       topologyKey: "topolody.kubernetes.io/zone" 
@@ -60,6 +60,7 @@ spec:
         failureThreshold: 3
 
     
+
 
 
 
